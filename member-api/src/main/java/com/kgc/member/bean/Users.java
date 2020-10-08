@@ -1,5 +1,8 @@
 package com.kgc.member.bean;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -11,7 +14,8 @@ public class Users implements Serializable {
     private String password;
 
     private Integer status;
-
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date lastmodifytime;
 
     private Integer typeid;

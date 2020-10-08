@@ -1,12 +1,14 @@
 package com.kgc.member.memberservice.service;
 
 import com.kgc.member.bean.UserType;
+import com.kgc.member.bean.UserType;
 import com.kgc.member.memberservice.mapper.UserTypeMapper;
 import com.kgc.member.service.UserTypeService;
 import com.kgc.member.util.RedisUtil;
 import io.searchbox.client.JestClient;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
+import jodd.util.StringUtil;
 import org.apache.dubbo.config.annotation.Service;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
@@ -36,7 +38,7 @@ public class UserTypeServiceImpl implements UserTypeService {
         BoolQueryBuilder boolQueryBuilder=new BoolQueryBuilder();
         searchSourceBuilder.query(boolQueryBuilder);
         String dsl=searchSourceBuilder.toString();
-        Search search=new Search.Builder(dsl).addIndex("usertype").addType("usertypeinfo").build();
+        Search search=new Search.Builder(dsl).addIndex("usetype").addType("usertypeinfo").build();
         try {
             SearchResult searchResult=jestClient.execute(search);
             List<SearchResult.Hit<UserType,Void>> hits=searchResult.getHits(UserType.class);

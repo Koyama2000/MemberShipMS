@@ -6,6 +6,7 @@ import com.kgc.member.memberservice.mapper.UsersMapper;
 import com.kgc.member.service.UsersService;
 import com.kgc.member.util.RedisUtil;
 import io.searchbox.client.JestClient;
+import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import jodd.util.StringUtil;
@@ -95,6 +96,8 @@ public class UsersServiceImpl implements UsersService {
         }
         return null;
     }
+    @Resource
+    EsService esService;
 
     @Override
     public int UPDATE_PWD(Integer id, String password, String newpassword) {
@@ -103,9 +106,19 @@ public class UsersServiceImpl implements UsersService {
             if (!users.getPassword().equals(password)) {
                 return 3;
             }
-            users.setPassword(password);
+            users.setPassword(newpassword);
             int i = usersMapper.updateByPrimaryKeySelective(users);
-            return i;
+            if(i>0){
+                String index =String.valueOf(users.getId());
+                try {
+                    esService.deleteData(index,"users","usersinfo");
+                    Index in=new Index.Builder(users).index("users").type("usersinfo").id(users.getId()+"").build();
+                    jestClient.execute(in);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return i;
+            }
         }
         return 0;
     }

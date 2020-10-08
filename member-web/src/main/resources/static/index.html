@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="vuebox">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-2">
+                <span>用户名:<b>{{users.name}}</b></span>&nbsp;&nbsp;
+                <span v-for="item in typelist" v-if="item.id==users.typeid">用户类型:<b>{{item.name}}</b></span>&nbsp;&nbsp;
+
+                <a href="javascript:void(0)" @click="logout()">退出</a><br/>
+                <a href="javascript:void(0)" @click="selecttype(1)">修改密码</a>
+                <a href="javascript:void(0)" @click="selecttype(0)">查看所有会员</a>
+            </div>
+        </div>
+        <div :class="{hidden:seltype!=0}">
+            <!--数据列表-->
+            <div class="row">
+                <div class="center-block text-center">
+                    <h2>会员列表</h2>
+
+                    <table class="table table-bordered">
+                        <tr>
+                            <td>序号</td>
+                            <td>用户名</td>
+                            <td>用户类别</td>
+                            <td>用户状态</td>
+                            <td>最后修改时间</td>
+                        </tr>
+                        <tr v-for="item in userslist.pageinfo">
+                            <td>{{item.id}}</td>
+                            <td>{{item.name}}</td>
+                            <td v-for="items in typelist" v-if="items.id==item.typeid">{{items.name}}</td>
+                            <td><b v-if="item.status==1">正常</b>
+                                <b v-if="item.status==0">冻结</b></td>
+                            <td>{{item.lastmodifytime}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <!--页面跳转-->
+            <div class="row">
+                <div class="navbar-right">
+                    <a href="javascript:void(0)" @click="gopage(0)">首页</a>
+                    <a v-show="userslist.hasPrePage" href="javascript:void(0)" @click="gopage(-1)">上一页</a>
+                    <a v-show="userslist.hasNextPage" href="javascript:void(0)" @click="gopage(1)">下一页</a>
+                    <span>第<b>{{pageNum}}</b>/<b>{{userslist.pages}}</b></span>
+                </div>
+            </div>
+        </div>
+        <div :class="{hidden:seltype!=1}">
+            <div class="text-center">
+                <div class="row">
+                    <label>原密码:</label><input type="text" class="form-control" v-model="us.password"/><br/>
+                    <label>新密码:</label><input type="text" class="form-control" v-model="us.newpassword1"/><br/>
+                    <label>请再次输入密码:</label><input type="text" class="form-control" v-model="us.newpassword2"/><br/>
+                    <button type="button" href="#" class="btn btn-primary" @click="updatepwd()">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    var vm=new Vue({
+        el:"#vuebox",
+        data:{
+            seltype:0,
+            name:null,
+            pageNum:1,
+            pageSize:2,
+            userslist:[],
+            users:{},
+            typelist:[],
+            us:{password:null,newpassword1:null,newpassword2:null}
+        },
+        mounted(){
+            this.querytype();
+            this.queryuser();
+            this.querylist();
+        },
+        methods:{
+            selecttype:function (i) {
+                this.seltype=i;
+            },
+            querytype:function () {
+                axios({url:"/usertype/list", method:"post",
+                    params:{}})
+                    .then(res=>{this.typelist=res.data});
+            },
+            queryuser:function () {
+                axios({url:"/user/session", method:"post",
+                    params:{}})
+                    .then(res=>{this.users=res.data});
+            },
+            querylist:function () {
+                axios({url:"/users/list", method:"post",
+                    params:{name:this.name,pageNum:this.pageNum,pageSize:this.pageSize}})
+                    .then(res=>{this.userslist=res.data});
+            },
+            gopage:function (i) {
+                if(i==0){
+                    this.pageNum=1;
+                    this.querylist();
+                }
+                this.pageNum=this.pageNum+i;
+                this.querylist();
+            },
+            updatepwd:function () {
+                if(this.us.password==null){
+                    alert("请输入原密码!");
+                    return false;
+                }
+                if(this.us.newpassword1==null||this.us.newpassword2==null){
+                    alert("请输入新密码!");
+                    return false;
+                }
+                if(this.us.password!=this.users.password){
+                    alert("原密码错误!");
+                    return false;
+                }
+                if(this.us.newpassword1!=this.us.newpassword2){
+                    alert("两次密码不一致!");
+                    return false;
+                }
+                axios({url:"/user/update",method: "get",
+                    params: {id:this.users.id,password:this.us.password,newpassword:this.us.newpassword1}})
+                    .then(res=>{
+                        if(res.data==1){
+                            alert("修改成功!");
+                        }
+                        if(res.data==3){
+                            alert("密码错误!");
+                            return null;
+                        }
+                        if(res.data==0){
+                            alert("修改失败");
+                            return null;
+                        }
+                })
+            },
+            logout:function () {
+                window.location="login.html";
+            }
+        }
+    })
+</script>

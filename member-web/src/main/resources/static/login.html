@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="vuebox">
+    <div class="container">
+        <label>用户名:</label><input type="text" class="form-control" v-model="user.username"/><br/>
+
+        <label>密码:</label><input type="text" class="form-control" v-model="user.password"/><br/>
+        <button type="button" href="#" class="btn btn-primary" @click="login()">登录</button>
+    </div>
+
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    var vm=new Vue({
+        el:"#vuebox",
+        data:{
+            user:{username:null,password:null}
+        },
+        mounted(){
+            this.querylist();
+        },
+        methods:{
+            login:function () {
+                if(this.user.username==null){
+                    alert("请填写名称!");
+                    return false;
+                }
+                if(this.user.password==null){
+                    alert("请填写密码!");
+                    return false;
+                }
+                axios({url:"/login",method: "get",params: {username:this.user.username,password:this.user.password}}).then(res=>{
+                    if(res.data.status=="OK"){
+                        alert("登录成功!");
+                        window.location="index.html";
+                    }else{
+                        alert("密码错误或者用户名不存在!");
+                    }
+                })
+            }
+        }
+    })
+</script>
